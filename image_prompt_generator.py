@@ -1,5 +1,7 @@
 import streamlit as st
+import requests
 
+# Funktion til at generere en prompt baseret på brugerens input
 def generate_prompt(details):
     prompt = (
         f"Lav et realistisk billede med følgende detaljer: \n"
@@ -16,9 +18,23 @@ def generate_prompt(details):
     )
     return prompt
 
+# Funktion til at generere et billede via Hugging Face's API
+def generate_image(prompt):
+    # Hugging Face Space URL (Stable Diffusion)
+    api_url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
+    headers = {"Authorization": "Bearer din_huggingface_api_nøgle"}  # Kan fjernes for offentlige Spaces
+    response = requests.post(api_url, json={"inputs": prompt}, headers=headers)
+
+    # Kontroller for fejl
+    if response.status_code == 200:
+        return response.content  # Returnerer billeddata
+    else:
+        raise Exception(f"Fejl: {response.status_code}, {response.text}")
+
+# Streamlit-app
 def main():
     st.title("AI Billedbeskrivelsesgenerator")
-    st.write("Udfyld formularen nedenfor for at skabe en detaljeret beskrivelse til et AI-genereret billede.")
+    st.write("Udfyld formularen nedenfor for at skabe en detaljeret beskrivelse og generere et AI-billede.")
 
     # Inputfelter til brugerens detaljer
     details = {
@@ -35,7 +51,6 @@ def main():
     }
 
     if st.button("Generer Beskrivelse"):
-        # Valider at påkrævede felter er udfyldt
         required_fields = ['main_subject', 'environment', 'background', 'people', 'activity', 'mood', 'color_palette', 'lighting', 'perspective']
         if any(not details[field].strip() for field in required_fields):
             st.warning("Alle påkrævede felter skal udfyldes for at generere en detaljeret beskrivelse.")
@@ -44,16 +59,13 @@ def main():
             st.success("Beskrivelse genereret med succes!")
             st.code(prompt, language='markdown')
 
+            if st.button("Generer Billede"):
+                try:
+                    image_data = generate_image(prompt)
+                    st.image(image_data, caption="Genereret billede", use_column_width=True)
+                except Exception as e:
+                    st.error(f"Fejl under generering af billede: {e}")
+
 if __name__ == "__main__":
     main()
 
-import openai
-
-def generate_image(prompt):
-    openai.api_key = "din_api_nøgle"
-    response = openai.Image.create(
-        prompt=prompt,
-        n=1,
-        size="1024x1024"
-    )
-    return response['data'][0]['url']
