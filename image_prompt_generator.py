@@ -31,13 +31,14 @@ def main():
         'color_palette': st.text_input("Farvepalette (f.eks. varm, kølig, pastel):"),
         'lighting': st.text_input("Belysning (f.eks. naturlig, dæmpet, spotlight):"),
         'perspective': st.text_input("Perspektiv eller vinkel (f.eks. fugleperspektiv, øjenhøjde):"),
-        'additional_details': st.text_area("Yderligere detaljer eller specifikke ønsker:")
+        'additional_details': st.text_area("Yderligere detaljer eller specifikke ønsker (valgfrit):")
     }
 
     if st.button("Generer Beskrivelse"):
-        # Valider at alle felter er udfyldt
-        if any(not value.strip() for value in details.values()):
-            st.warning("Alle felter skal udfyldes for at generere en detaljeret beskrivelse.")
+        # Valider at påkrævede felter er udfyldt
+        required_fields = ['main_subject', 'environment', 'background', 'people', 'activity', 'mood', 'color_palette', 'lighting', 'perspective']
+        if any(not details[field].strip() for field in required_fields):
+            st.warning("Alle påkrævede felter skal udfyldes for at generere en detaljeret beskrivelse.")
         else:
             prompt = generate_prompt(details)
             st.success("Beskrivelse genereret med succes!")
