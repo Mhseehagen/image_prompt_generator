@@ -46,3 +46,14 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+import openai
+
+def generate_image(prompt):
+    openai.api_key = "din_api_nøgle"
+    response = openai.Image.create(
+        prompt=prompt,
+        n=1,
+        size="1024x1024"
+    )
+    return response['data'][0]['url']
